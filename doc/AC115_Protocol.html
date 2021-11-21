@@ -1,0 +1,430 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" >
+	<head>
+		<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1" />
+		<title>AC-115 dokumentatsioon</title>
+		<script type="text/javascript">
+function getDocumentHeight(){
+	if(window.innerHeight>0){
+		return window.innerHeight;
+	}
+	return document.documentElement.clientHeight;
+}
+
+function getDocumentWidth(){
+	if(window.innerWidth>0){
+		return window.innerWidth;
+	}
+	return document.documentElement.clientWidth;
+}
+
+function resizeContent(){
+	document.getElementById("abs1").style.height=(getDocumentHeight()-40)+"px";
+	document.getElementById("cent").style.width=Math.min(700,Math.max(100,getDocumentWidth()-460))+"px";
+}
+		</script>
+		<style type="text/css">
+body, p, h1, h2, h3, li { font-family:'Verdana','Helvetica','Arial','Sans-Serif'; font-size:10pt; color:black; }
+body { font-size:12px; font-family:Arial; display: block; text-align: center; margin: 0; margin-bottom:10px; color: #000000; }
+a:link { text-decoration:none; }
+a:visited { text-decoration:none; }
+a:active { text-decoration:underline; }
+a:hover { text-decoration:underline; }
+p{ text-align:justify; }
+#cent { display:block; text-align:left; width:700px; margin:0 auto 0 auto; }
+pre{ background-color: #fbedbb; padding: 7pt; font:9pt 'Courier New', 'Courier', 'Mono'; white-space:pre; overflow:auto; }
+h1{ font-size: 16pt; }
+h2{ font-size: 13pt; color:#4488FF; }
+h3{ font-family:'Arial','Sans-Serif'; font-size:11pt; color:#ff9900; }
+#abs1 { text-align:left; padding:10px; position:fixed; top:10px; background:#C0C0C0; width:180px; left:10px; overflow:auto; }
+#abs1 ul { list-style: none; padding:0; margin:0; }
+#abs1 ul li { padding-bottom:8px; font:normal 12px 'Arial'; }
+#abs1 ul li a { color:#000000; }
+		</style>
+	</head>
+	<body onresize="resizeContent()">
+		<div id="abs1">
+<ul>
+<li><b><a href="#x110">1.1. Paketi üldine ülesehitus</a></b></li>
+<li><b><a href="#x120">1.2. Põhilised toimingud</a></b></li>
+<li><small><a href="#x121">1.2.1. Uue ukse aktiveerimine</a></small></li>
+<li><small><a href="#x122">1.2.2. Download</a></small></li>
+<li><small><a href="#x123">1.2.3. Upload</a></small></li>
+<li><small><a href="#x124">1.2.4. Sündmuste teatamine</a></small></li>
+<li><b><a href="#x210">2.1. Seadete paketid</a></b></li>
+<li><small><a href="#x211">2.1.1. Firmware versiooni küsimine</a></small></li>
+<li><small><a href="#x212">2.1.2. Üldiste valikute seadistamine</a></small></li>
+<li><small><a href="#x213">2.1.3. Aegade seadistamine</a></small></li>
+<li><small><a href="#x214">2.1.4. Süsteemikoodide seadistamine</a></small></li>
+<li><b><a href="#x220">2.2. Sündmuste paketid</a></b></li>
+<li><small><a href="#x221">2.2.1. Sündmuste teatamine</a></small></li>
+<li><small><a href="#x222">2.2.2. Sündmuste upload</a></small></li>
+<li><small><a href="#x223">2.2.3. Sündmuste kustutamine seadmest</a></small></li>
+<li><b><a href="#x230">2.3. Aja paketid</a></b></li>
+<li><small><a href="#x231">2.3.1. Aja küsimine</a></small></li>
+<li><small><a href="#x232">2.3.2. Aja seadmine</a></small></li>
+<li><b><a href="#x240">2.4. Kasutajate paketid</a></b></li>
+<li><small><a href="#x241">2.4.1. Kasutaja seadistamine</a></small></li>
+<li><small><a href="#x242">2.4.2. Kasutajate reset</a></small></li>
+<li><b><a href="#x250">2.5. Ajavööndite ja pühade paketid</a></b></li>
+<li><small><a href="#x251">2.5.1. Ajavööndite seadistamine</a></small></li>
+<li><small><a href="#x252">2.5.2. Automaat-lahtioleku seadistamine</a></small></li>
+<li><small><a href="#x253">2.5.3. Pühade seadistamine</a></small></li>
+</ul></div>
+		<div id="cent">
+<h1 id="x110">1.1. Paketi üldine ülesehitus</h1>
+<p><i>Pseudocode:</i></p>
+<pre>struct ST_PACKET {
+	DWORD dwMagic;
+	//value is 0xFFFFFF55
+	WORD wTargetDevice;
+	//target device ID
+	WORD wSourceDevice;
+	//source device ID
+	WORD wContentLength;
+	//length of the content, at least 1
+	BYTE byteActionID;
+	//ID of the packet
+	BYTE byteContents[wContentLength-1];
+	//contents of the packet
+	BYTE byteCheckSum;
+	//checksum of everything except dwMagic
+};</pre>
+<p><b>NB!</b> Kõik väljad on <i>big-endian</i>, programmides kasutamiseks tuleb väljades baidid enne ümber pöörata.</p>
+<p>Seade saadab pakettide lõpus ühe null-baidi, kuid InteliDoor ei saada. Ilmselt ei ole see bait oluline.</p>
+<h2 id="x111">1.1.1. Seadme ID (device ID)</h2>
+<pre>0x0201 - door number 1
+0x0202 - door number 2
+......................
+0x0208 - door number 8
+0x02FF - all doors
+0x0251 - computer</pre>
+<h1 id="x120">1.2. Põhilised toimingud</h1>
+<h2 id="x121">1.2.1. Uue ukse aktiveerimine</h2>
+<p>Vajutades kasti "Door installed" peale saadab seade:</p>
+<pre>[päring, m4x2s] <a href="#x211">Aja küsimise päring 0x41 (0+12 baiti)</a>
+[vastus nr 1  ] <a href="#x231">Aja küsimise vastus 0xC0 (8+13 baiti)</a>
+[päring, m4x2s] <a href="#x231"><i>Firmware</i> versiooni küsimise päring 0x72 (0+12 baiti)</a>
+[vastus nr 2  ] <a href="#x211"><i>Firmware</i> versiooni küsimise vastus 0xF3 (8+13 baiti)</a></pre>
+<p>Kui <b>vastus nr 1</b> ei tule kohale, siis InteliDoor annab teate: "No response from the installed AC115. Installation aborted."</p>
+<p>Kui <b>vastus nr 2</b> ei tule kohale või ei ole sobiva sisuga, siis annab InteliDoor teate: "The installed Ac115 Firmware is not compatible with the PC software. Installation aborted."</p>
+<h2 id="x122">1.2.2. Download</h2>
+<p>Vajutades "Download" nupu peale, saadetakse järgnevad paketid igale muudetud uksele:</p>
+<pre>[päring 5x0.5s] <a href="#x232">Aja seadmise päring 0x6C (6+12 baiti)</a>
+<b>// ainult uute uste puhul</b>
+[päring, m4x1s] <a href="#x223">Sündmuste kustutamise päring 0x76 (8+12 baiti)</a>
+[vastus       ] <a href="#x223">Sündmuste kustutamise vastus 0x80 (0+13 baiti)</a>
+[päring, m4x1s] <a href="#x242">Kasutajate reseti päring 0x6E (8+12 baiti)</a>
+[vastus       ] <a href="#x242">Kasutajate reseti vastus 0xEF (1+13 baiti)</a>
+<b>// uus uks või süsteemikoode muudeti</b>
+[päring, m4x1s] <a href="#x214">Süsteemikoodide seadistamise päring 0x66 (24+12 baiti)</a>
+[vastus       ] <a href="#x214">Süsteemikoodide seadistamise vastus 0xE7 (1+13 baiti)</a>
+<b>// uue ukse puhul kõigi kasutajatega, muidu muudetud kasutajatega</b>
+[päring, m4x1s] <a href="#x241">Kasutaja seadistamise päring 0x32 (9+12 baiti)</a>
+[vastus       ] <a href="#x241">Kasutaja seadistamise vastus 0xB3 (6+13 baiti)</a>
+[   KORDUV    ]
+<b>// uue ukse puhul kõigi ajavöönditega (8x), muidu muudetud ajavöönditega</b>
+[päring, m4x1s] <a href="#x251">Ajavööndite seadistamise päring 0x36 (33+12 baiti)</a>
+[vastus       ] <a href="#x251">Ajavööndite seadistamise vastus 0xB7 (1+13 baiti)</a>
+[   KORDUV    ]
+<b>// uus uks või automaatlahtioleku aega muudeti</b>
+[päring, m4x1s] <a href="#x252">Automaat-lahtioleku seadistamise päring 0x3A (32+12 baiti)</a>
+[vastus       ] <a href="#x252">Automaat-lahtioleku seadistamise vastus 0xBB (1+13 baiti)</a>
+<b>// uus uks või pühasid muudeti</b>
+[päring, m4x1s] <a href="#x253">Pühade seadistamise päring 0x3E (48+12 baiti)</a>
+[vastus       ] <a href="#x253">Pühade seadistamise vastus 0xBF (1+13 baiti)</a>
+<b>// uus uks või süsteemiaegu muudeti</b>
+[päring, m4x1s] <a href="#x213">Aegade seadistamise päring 0x62 (10+12 baiti)</a>
+[vastus       ] <a href="#x213">Aegade seadistamise vastus 0xE3 (1+13 baiti)</a>
+<b>// uus uks või üldseadeid muudeti</b>
+[päring, m4x1s] <a href="#x212">Üldiste valikute päring 0x6A (6+12 baiti)</a>
+[vastus       ] <a href="#x212">Üldiste valikute vastus 0xEB (1+13 baiti)</a>
+</pre>
+<p><b>NB!</b> Alati, kui InteliDoor vajalikku vastust ei saa või mingi vastus väljastab errori, teatab InteliDoor, et toiming ebaõnnestus.</p>
+<h2 id="x123">1.2.3. Upload</h2>
+<pre><b>// kuni vastuses on mõni tühi event</b>
+[päring, m4x1s] <a href="#x222">Sündmuste uploadi päring 0x74 (2+12 baiti)</a>
+[vastus       ] <a href="#x222">Sündmuste uploadi vastus 0xF5 (40+13 baiti)</a>
+[   KORDUV    ]
+<b>// kui eventid on käes, kustutab seadmest need ära</b>
+[päring, m4x1s] <a href="#x223">Sündmuste kustutamise päring 0x76 (8+12 baiti)</a>
+[vastus       ] <a href="#x223">Sündmuste kustutamise vastus 0x80 (0+13 baiti)</a>
+</pre>
+<h2 id="x124">1.2.4. Sündmuste teatamine</h2>
+<pre>[teade, 3x0.5s] <a href="#x221">Sündmuste teatamise pakett 0x20 (8+13 baiti)</a>
+</pre>
+<h1 id="x210">2.1. Seadete paketid</h1>
+<h2 id="x211">2.1.1. Firmware versiooni küsimine</h2>
+<p>Firmware versiooni kontrollib InteliDoor uue ukse seadistamisel.</p>
+<h3>Firmware versiooni küsimise päring (0x72)</h3>
+<p>Paketi sisu on 0 baiti.</p>
+<h3>Firmware versiooni küsimise vastus (0xF3)</h3>
+<pre>#pragma pack(1)
+struct ST_EVENT_FIRMWAREVER {
+	BYTE byteVersion[8];
+	//string, without a null terminator
+};</pre>
+<p>Testitaval seadmel oli vastuseks selline string: "AC115V33".</p>
+<h2 id="x212">2.1.2. Üldiste valikute seadistamine</h2>
+<p>Üldiste valikute all pean silmas kõiki checkboxidena esinevaid seadeid, mida saab muuta InteliDooris "Doors->Door Properties->Configuration/Alarms" juurest.</p>
+<h3>Üldiste valikute päring (0x6A)</h3>
+<pre>#pragma pack(1)
+struct ST_DOOROPTIONS {
+	unsigned bsCheck1:4; // 0.0h-0.4h
+	unsigned bsCheck2:4; // 0.4h-1.0h
+	unsigned bsCheck3:4; // 1.0h-1.4h
+	unsigned bsCheck4:4; // 1.4h-2.0h
+	unsigned bsCheck5:4; // 2.0h-2.4h
+	unsigned bsCheck6:4; // 2.4h-3.0h
+	unsigned bsCheck7:4; // 3.0h-3.4h
+	unsigned bsCheck8:4; // 3.4h-4.0h
+	unsigned bsRexStrike:4; // 4.0h-4.4h
+	unsigned bsRexAux:4; // 4.4h-5.0h
+	unsigned bsChimeDoor:4; // 5.0h-5.4h
+	unsigned bsChimeCode:4; // 5.4h-6.0h
+};</pre>
+<p><b>bsCheck1</b> näitab, kas "Door Properties->Alarms" kast Ajar-Siren on valitud, <b>bsCheck2</b> näitab Ajar-Auxiliary, <b>bsCheck3</b> näitab Force-Siren jne.</p>
+<p><b>bsRexStrike</b>, <b>bsRexAux</b>, <b>bsChimeDoor</b>, <b>bsChimeCode</b> tähistavad vastavaid kaste "Door Properties->Configuration" lehel.</p>
+<p><b>NB! Väärtus 0 asemel on 10 (0xA).</b> Näide:</p>
+<pre>FF FF FF 55 02 03 02 51 00 07 6A <b>AA AA AA AA 1A 1A</b> A5</pre>
+<h3>Üldiste valikute vastus (0xEB)</h3>
+<p>Vastuse paketi sisu pikkus on 1 bait ning see tähistab <tt>error code</tt>-i, kus 0 tähendab õnnestumist.</p>
+<h2 id="x213">2.1.3. Aegade seadistamine</h2>
+<p>Aegade alla kuuluvad InteliDooris "Door Properties->Configuration/Alarms" lehtedel olevad ajad (Strike Time, Aux Time, Siren Time, Door Ajar, Door Forced).</p>
+<h3>Aegade seadistamise päring (0x62)</h3>
+<pre>#pragma pack(1)
+struct ST_MINSECPAIR {
+	BYTE byteMinute; // 00h-01h
+	BYTE byteSecond; // 01h-02h
+};
+
+#pragma pack(1)
+struct ST_REQUEST_SETSYSTIMES {
+	ST_MINSECPAIR stTimes[5]; // 00h-0Ah
+	//different system times (strike time, door ajar time,
+	//door forced time, siren time, aux time)
+};</pre>
+<p>Ajad on struktuuris selles järjekorras: Strike Time, Door Ajar Time, Door Forced Time, Siren Time, Aux Time.</p>
+<h3>Aegade seadistamise vastus (0xE3)</h3>
+<p>Vastuse paketi sisu pikkus on 1 bait ning see tähistab <tt>error code</tt>-i, kus 0 tähendab õnnestumist.</p>
+<h2 id="x214">2.1.4. Süsteemikoodide seadistamine</h2>
+<p>Süsteemikoode seadistab InteliDoor kas uue ukse seadistamisel või InteliDooris üldiste süsteemikoodide muutmisel.</p>
+<h3>Süsteemikoodide seadistamise päring (0x66)</h3>
+<pre>#pragma pack(1)
+struct ST_REQUEST_SETSYSCODES {
+	DWORD dwSysCodes[6]; // 00h-18h
+	//system codes, last byte is 0x7F - that probably means it's set
+};</pre>
+<p>Esimesed kolm baiti tähistavad süsteemikoodi. Kuigi koodis on lubatud ainult numbrid 0-9, loetakse see sisse siiski HEX kujul. Kui koodis on sees number 0, siis muudetakse see A-ks (10), kuna 0 tähistab puuduvat kohta. Näiteks süsteemikood 3038 esineb sellisel kujul: 0x3A 0x38 0x00 0x7F (ühe little-endian numbrina siis 0x7F00383A).</p>
+<h3>Süsteemikoodide seadistamise vastus (0xE7)</h3>
+<p>Vastuse paketi sisu pikkus on 1 bait ning see tähistab <tt>error code</tt>-i, kus 0 tähendab õnnestumist. Toiming ebaõnnestub näiteks, kui mõni süsteemikood on juba kasutusel mõne kasutaja PIN-koodina.</p>
+<h1 id="x220">2.2. Sündmuste paketid</h1>
+<h2 id="x221">2.2.1. Sündmuste teatamine</h2>
+<p>Sündmuste teatamine toimub iga kord, kui seade tuvastab Proximity kaardi või seadmesse sisestatakse PIN-kood (v.a. juhul kui kasutaja tuvastatakse, kuid tal puudu STRIKE õigus).</p>
+<h3>Sündmuste teatamise pakett (0x20)</h3>
+<pre>#pragma pack(1)
+struct ST_EVENT_ACCESSDOOR {
+    DWORD dwAccessCode; // 00-04h
+    //4th byte is access type (0x80 proximity, 0x00 pin code), 1-3 are access code
+    BYTE byteFlags; // 04h-05h
+    //0x01 - outreader, 0x08 - strike was not initiated or already open,
+    //0x10 - unknown employee or already open, 0x20 - door is already
+    //open and access code is valid
+    WORD wSlotNumber; // 05h-07h
+    //specifies the slot number of the user
+    BYTE bytePacketCount; // 07h-08h
+    //specifies an ident id that grows by one for each unique packet
+};</pre>
+<p><b>dwAccessCode</b> esimesed 3 baiti sisaldavad PIN koodi või kaardi numbrit. Neljas bait näitab ära tüübi: 0x00 - PIN, 0x80 - Proximity kaart. Proximity kaardi puhul on esimene bait kaardi esimene number (0-255), teine-kolmas bait kaardi teine number (0-65535 - big-endian). PIN koodi puhul on kolm baiti järjest PIN kood (big-endian). PIN kood on hexis, see tähendab, et kui kood 232425, siis baidid on 0x23,0x24,0x25. Kui PIN koodis esineb number 0, siis see muudetakse hexi A-ks, kuna null on reserveeritud sisestamata numbri jaoks, et eraldada näiteks PIN koodid 4321 ja 432100.</p>
+<p><b>byteFlags</b> sisaldab infot selle kohta, kas sissepääs õnnestus ja kas tegemist oli IN või OUT readeriga. Väärtusi saab lugeda ülevalt struktuuri kommentaarist. Seega kui sissepääs õnnestub OUT readeris, peaks vastuseks olema 0x01, kui ebaõnnestus OUT readeris, on vastus 0x19, kui mingite seadete tõttu registreeritud kasutajal on sissepääs keelatud, siis IN reader annab flagideks 0x08 (OUT readeri puhul avatakse uks alati). Kui aga kasutajal on õigus ust avada, kuid uks on AutoOpeni tõttu lahtises olekus (IN reader), siis flagideks on mingil põhjusel 0x38 (või 0x39). PIN koodi sisestamisel on alati OUT readeri flag kasutusel.</p>
+<p><b>wSlotNumber</b> nimetab ära kasutaja ID, kes sooritas sissepääsukatse (big-endian). See number algab nullist - kui InteliDoor näitab slot number-iks 0001, siis siin on selle kasutaja puhul väärtus 0 (kasutaja andmete muutmisel aga algab kasutaja ID number 1-st ehk ühtib InteliDooris näitatavaga).</p>
+<p><b>bytePacketCount</b> näitab, mitmes unikaalne sissepääsupakett see on. Seda kasutatakse, et eristada sama paketi kordussaatmised uutest pakettidest.</p>
+<h2 id="x222">2.2.2. Sündmuste upload</h2>
+<p>InteliDoor kasutab sündmuste uploadi ukse raporti koostamiseks (upload võib toimuda nii manuaalselt kui ka automaatselt).</p>
+<h3>Sündmuste uploadi päring (0x74)</h3>
+<pre>#pragma pack(1)
+struct ST_REQUEST_UPLOAD {
+    WORD wStartFrom; // 00h-02h
+    //specifies the index from what to start uploading (uploads 4 accesses per request)
+};</pre>
+<p><b>wStartFrom</b> näitab, mis eventi ID-st alates saata pakett nelja eventi sisuga. See number algab 1-st.</p>
+<p>InteliDoor saadab niikaua uusi päringuid eventide järgi, kuni näeb olevat vastu saadetud paketis esimest tühja kohta. Seejärel saadab InteliDoor paketi, mis teatab seadmele, et kindel arv evente ära kustutada enda logist.</p>
+<h3>Sündmuste uploadi vastus (0xF5)</h3>
+<pre>#pragma pack(1)
+struct EVENT_DATA {
+    WORD wEventId; // 00h-02h
+    //the ID of the event
+    DWORD dwTime; // 02h-06h
+    //time of the event
+    BYTE byteEventFlags; // 06h-07h
+    //type of the event (0x01 - )
+    BYTE byteEventData1; // 07h-08h
+    //event data part 1
+    WORD wEventData2; // 08h-0Ah
+    //event data part 2
+};
+
+#pragma pack(1)
+struct ST_EVENT_UPLOAD {
+    EVENT_DATA stEvents[4];
+};</pre>
+<p><b>wEventId</b> sisaldab alati koha numbrit, isegi siis kui eventil sisu puudub.</p>
+<p><b>dwTime</b> sisaldab kellaaega seadme kella järgi.</p>
+<p><b>byteEventFlags</b> sisaldab eventi flage, mis on kasutajaeventide puhul samad, kui kaardi läbitõmbamise sündmuse flagidel. Lisaks on aga kindlad konstandid, mis näitavad teist eventi tüüpi: 0xC8 - auxiliary open, 0xE0 - door strike close, 0xD0 - auxiliary close. Kui kasutaja oli seadmele teada, siis <b>byteEventData1</b> on 0 ning <b>wEventData2</b> sisaldab kasutaja ID-d. Kui oli tundmatu, siis sisaldavad <b>byteEventData1</b> ja <b>wEventData2</b> kahepeale kokku kas sisestatud PINi või Proximity kaardi ID-d samasugusel kujul, nagu kaardi läbitõmbasine sündmuses.</p>
+<p>InteliDoor saadab niikaua uusi päringuid eventide järgi, kuni näeb olevat vastu saadetud paketis esimest tühja kohta. Seejärel saadab InteliDoor paketi, mis teatab seadmele, et kindel arv evente ära kustutada enda logist (vt järgmine pakett).</p>
+<h2 id="x223">2.2.3. Sündmuste kustutamine seadmest</h2>
+<p>Igal uploadil kustutab InteliDoor seadmest vanad sündmused ära. Seda kasutatakse ka uue ukse seadistamisel.</p>
+<h3>Sündmuste kustutamise päring (0x76)</h3>
+<pre>#pragma pack(1)
+struct ST_REQUEST_CLEAREVENTS {
+    DWORD dwReserved1; // 00h-04h
+    //haven't seen it being used yet
+    WORD wReserved2; // 04h-06h
+    //haven't seen it being used yet
+    WORD wDelUntil; // 06h-08h
+    //specifies the ID of the first item not to delete
+    //(if the last valid packet is ID 1, InteliDoor sends 2 as the value)
+};</pre>
+<p><b>wDelUntil</b> on üldiselt viimasest andmeid sisaldavast eventi IDst 1 võrra suurem. Selle paketi vastuvõtmisel kustutab seade enda mälust kõik eventid kuni selle eventi ID-ni (2401 tähendab kõigi eemaldamist).</p>
+<h3>Sündmuste kustutamise vastus (0x80)</h3>
+<p>Sündmuste kustutamise vastuse paketi sisu on tühi (0 baiti).</p>
+<h1 id="x230">2.3. Aja paketid</h1>
+<h2 id="x231">2.3.1. Aja küsimine</h2>
+<p>InteliDoor kasutab aja küsimist kontrollimaks, et uks on olemas (proovib max 4x, pikenevate vahedega). Teine koht, kus InteliDoor seda kasutab, on <tt>Setting->Clock->Set Clock</tt>, kus saab vaadata, mida erinevate uste kellad hetkel näitavad.</p>
+<h3>Aja küsimise päring (0x41)</h3>
+<p>Aja küsimise päringu paketi sisu on 0 baiti.</p>
+<h3>Aja küsimise vastus (0xC0)</h3>
+<pre>#pragma pack(1)
+struct ST_EVENT_DATETIME {
+	BYTE byteDeciSec; // 00h-01h
+	//some unit smaller than second - not sent
+	BYTE byteSecond; // 01h-02h
+	//datetime - second
+	BYTE byteMinute; // 02h-03h
+	//datetime - minute
+	BYTE byteHour; // 03h-04h
+	//datetime - hour
+	BYTE byteDay; // 04h-05h
+	//datetime - hour
+	BYTE byteMonth; // 05-06h
+	//datetime - hour
+	BYTE byteYear; // 06-07h
+	//datetime - years since 2000
+	BYTE byteDayOfWeek; // 07h-08h
+	//datetime - day of month
+	BYTE byteFlags; // 08h-09h
+	//mostly 0x18, sometimes 0x1C
+	BYTE bytePacketCount; // 09-0Ah
+	//time packets sent
+};</pre>
+<p><b>bytePacketCount</b> suureneb iga saadetud paketiga.</p>
+<p><b>byteFlags</b> elemendid on seni tundmatud.</p>
+<h2 id="x232">2.3.2. Aja seadmine</h2>
+<p>Aega seab InteliDoor paika uue ukse seadistamisel, Downloadi ajal (juhul, kui <tt>Setting->Clock</tt> juures on vastav linnuke valitud) ning seda saab teha käsitsi <tt>Setting->Clock->Set Clock</tt> alt.</p>
+<h3>Aja seadmise päring (0x6C)</h3>
+<pre>#pragma pack(1)
+struct ST_REQUEST_SETDATETIME {
+	BYTE byteYear; // 00h-01h
+	//datetime - years since 2000
+	BYTE byteMonth; // 01-02h
+	//datetime - hour
+	BYTE byteDay; // 02h-03h
+	//datetime - hour
+	BYTE byteHour; // 03h-04h
+	//datetime - hour
+	BYTE byteMinute; // 04h-05h
+	//datetime - minute
+	BYTE byteSecond; // 05h-06h
+	//datetime - second
+};</pre>
+<p>NB! Sellele päringule seadmelt vastust ei järgne.</p>
+<h1 id="x240">2.4. Kasutajate paketid</h1>
+<h2 id="x241">2.4.1. Kasutaja seadistamine</h2>
+<p>Kasutaja seadistamine toimub downloadi ajal pärast kasutajate muutmist/lisamist või uue ukse seadistamisel.</p>
+<h3>Kasutaja seadistamise päring (0x32)</h3>
+<pre>#pragma pack(1)
+struct ST_REQUEST_SETUSERDATA {
+	BYTE byteGroup; // 00h-01h
+	//no other value than 1 seen yet
+	WORD wSlotId; // 01h-03h
+	//the slot ID of the user
+	DWORD dwAccessCode; // 03h-07h
+	//4th byte is access type (0x80 proximity, 0x00 pin code), 1-3 are access code
+	BYTE byteTimezones; // 07h-08h
+	//bitfield of timezones to use
+	BYTE byteFlags; // 07h-09h
+	//0x01 - strike right, 0x02 - auxiliary right, 0x20 - no time zones
+};</pre>
+<p>Kui <b>dwAccessCode</b> on PIN kood (4. bait 0x00), siis on <b>dwAccessCode</b> väärtus näiteks koodi 38303 puhul: <tt>0x38 0x3A 0x30 0x00</tt> (little-endian: 0x00303A38), kuna kood loetakse sisse HEX-ina ning 0 asendatakse A-ga, kuna 0 tähistab tühja kohta. Kui aga on tegemist kaardiga, mille number on näiteks 062 09240, siis on <b>dwAccessCode</b> väärtus: <tt>0x3E 0x24 0x18 0x80</tt> (little-endian: 0x8018243E).</p>
+<p><b>byteTimezones</b> on bitiväli, mis tähistab, milliseid ajavööndeid kasutaja kasutab (iga bitt on üks ajavöönd).</p>
+<p><b>NB!</b> Seade ei lase muuta olemasoleva kasutaja PIN koodi/Proximity kaardi numbrit.
+<p><b>Kasutaja kustutamiseks</b> tuleb panna väljadele <b>dwAccessCode</b>, <b>byteTimezones</b> ja <b>byteFlags</b> väärtused vastavalt 0xFFFFFFFF, 0xFF ja 0xFF (ehk -1).</p>
+<h3>Kasutaja seadistamise vastus (0xB3)</h3>
+<pre>#pragma pack(1)
+struct ST_EVENT_USERCHANGED {
+	BYTE byteError; // 00h-01h
+	//error id, 0 - no error, otherwise the user data is sent back
+	DWORD dwAccessCode; // 01h-05h
+	//4th byte is access type (0x80 proximity, 0x00 pin code), 1-3 are access code
+	BYTE byteFailed; // 05h-06h
+	//tells whether adding the user failed
+};</pre>
+<p><b>dwAccessCode</b> ühtib päringus saadetuga, kui päring ebaõnnestus.</p>
+<h2 id="x242">2.4.2. Kasutajate reset</h2>
+<h3>Kasutajate reseti päring (0x6E)</h3>
+<p>Päringu sisu pikkus on 1 bait, mis senistel vaatlustel sisaldab alati numbrit 33 (0x21). Vastuse saamiseks kulub veidi aega, mis tähendab, et ilmselt kirjutab seade üle kogu kasutajate andmete ala.</p>
+<h3>Kasutajate reseti vastus (0xEF)</h3>
+<p>Vastuse paketi sisu pikkus on 1 bait ning see tähistab <tt>error code</tt>-i, kus 0 tähendab õnnestumist.</p>
+<h1 id="x250">2.5. Ajavööndite ja pühade paketid</h1>
+<h2 id="x251">2.5.1. Ajavööndite seadistamine</h2>
+<h3>Ajavööndite seadistamise päring (0x36)</h3>
+<pre>#pragma pack(1)
+struct ST_HOURMINPAIR {
+	BYTE byteHour; // 00h-01h
+	BYTE byteMinute; // 01h-02h
+};
+
+#pragma pack(1)
+struct ST_REQUEST_SETTIMEZONE {
+	BYTE byteSlot; // 00h-01h
+	//specifies the timezone slot that is being set/changed
+	ST_HOURMINPAIR stTime[16]; // 01h-21h
+	//1st day start, 1st day end, 2nd day start, 2nd day end, etc
+};</pre>
+<h3>Ajavööndite seadistamise vastus (0xB7)</h3>
+<p>Vastuse paketi sisu pikkus on 1 bait ning see tähistab <tt>error code</tt>-i, kus 0 tähendab õnnestumist.</p>
+<h2 id="x252">2.5.2. Automaat-lahtioleku seadistamine</h2>
+<h3>Automaat-lahtioleku seadistamise päring (0x3A)</h3>
+<pre>#pragma pack(1)
+struct ST_HOURMINPAIR {
+	BYTE byteHour; // 00h-01h
+	BYTE byteMinute; // 01h-02h
+};
+
+#pragma pack(1)
+struct ST_REQUEST_SETTIMEZONE {
+	ST_HOURMINPAIR stTime[16]; // 01h-21h
+	//1st day start, 1st day end, 2nd day start, 2nd day end, etc
+};</pre>
+<h3>Automaat-lahtioleku seadistamise vastus (0xBB)</h3>
+<p>Vastuse paketi sisu pikkus on 1 bait ning see tähistab <tt>error code</tt>-i, kus 0 tähendab õnnestumist.</p>
+<h2 id="x253">2.5.3. Pühade seadistamine</h2>
+<h3>Pühade seadistamise päring (0x3E)</h3>
+<pre>#pragma pack(1)
+struct ST_DAYMONTHPAIR {
+	BYTE byteDay; // 00h-01h
+	BYTE byteMonth; // 01h-02h
+};
+
+#pragma pack(1)
+struct ST_REQUEST_SETHOLIDAYS {
+	ST_DAYMONTHPAIR stHolidays[24]; // 00h-30h
+};</pre>
+<h3>Pühade seadistamise vastus (0xBF)</h3>
+<p>Vastuse paketi sisu pikkus on 1 bait ning see tähistab <tt>error code</tt>-i, kus 0 tähendab õnnestumist.</p>
+<script type="text/javascript">
+resizeContent();
+</script>
+		</div>
+	</body>
+</html>

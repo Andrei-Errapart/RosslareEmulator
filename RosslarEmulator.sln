@@ -1,0 +1,29 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual Studio 2005
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RosslarEmulator", "RosslarEmulator.csproj", "{46B4A7D3-2A1E-44F3-B7CC-E89EB54F5644}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3E83873F-8F61-4DBC-ACB5-5016DC68F698} = {3E83873F-8F61-4DBC-ACB5-5016DC68F698}
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSUtils", "..\..\base\CSUtils\CSUtils.csproj", "{3E83873F-8F61-4DBC-ACB5-5016DC68F698}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{46B4A7D3-2A1E-44F3-B7CC-E89EB54F5644}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{46B4A7D3-2A1E-44F3-B7CC-E89EB54F5644}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{46B4A7D3-2A1E-44F3-B7CC-E89EB54F5644}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{46B4A7D3-2A1E-44F3-B7CC-E89EB54F5644}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3E83873F-8F61-4DBC-ACB5-5016DC68F698}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3E83873F-8F61-4DBC-ACB5-5016DC68F698}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3E83873F-8F61-4DBC-ACB5-5016DC68F698}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3E83873F-8F61-4DBC-ACB5-5016DC68F698}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
